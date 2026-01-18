@@ -4,6 +4,21 @@ import (
 	"net"
 )
 
+func dedup(pronouns []Pronoun) []Pronoun {
+	seen := make(map[string]struct{})
+	result := []Pronoun{}
+
+	for _, p := range pronouns {
+		key := p.String()
+		if _, exists := seen[key]; !exists {
+			seen[key] = struct{}{}
+			result = append(result, p)
+		}
+	}
+
+	return result
+}
+
 func GetPronouns(domain string, fail bool) (*Pronouns, error) {
 	pronouns := &Pronouns{}
 
@@ -32,6 +47,8 @@ func GetPronouns(domain string, fail bool) (*Pronouns, error) {
 	}
 
 	pronouns.Accept = append(pronouns.Accept, p.Accept...)
+
+	pronouns.Accept = dedup(pronouns.Accept)
 
 	return pronouns, nil
 }
