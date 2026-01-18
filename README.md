@@ -19,7 +19,7 @@ For the library:
 import "github.com/vcokltfre/podgo"
 
 func main() {
-	pronouns, err := podgo.GetPronouns("domain.tld", false)
+	pronouns, err := podgo.GetPronouns("domain.tld", true)
 	if err != nil {
 		panic(err)
 	}
@@ -32,6 +32,10 @@ func main() {
 		println(p.Subject, p.Object, p.PossessiveDeterminer, p.PossessivePronoun, p.Reflexive)
 	}
 }
+
+// func GetPronouns(domain string, skipParseFails bool) (*Pronouns, error)
+// - domain: the domain to query for pronouns
+// - skipParseFails: if true, records that fail to parse will be skipped instead of returning an error
 ```
 
 ## License

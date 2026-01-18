@@ -12,7 +12,7 @@ func main() {
 		return
 	}
 
-	pronouns, err := podgo.GetPronouns(os.Args[1], false)
+	pronouns, err := podgo.GetPronouns(os.Args[1], true)
 	if err != nil {
 		println("Error:", err.Error())
 		return

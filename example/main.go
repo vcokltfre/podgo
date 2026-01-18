@@ -3,7 +3,7 @@ package main
 import "github.com/vcokltfre/podgo"
 
 func main() {
-	pronouns, err := podgo.GetPronouns("domain.tld", false)
+	pronouns, err := podgo.GetPronouns("domain.tld", true)
 	if err != nil {
 		panic(err)
 	}

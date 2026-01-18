@@ -61,13 +61,17 @@ func parseWildCardPronounsRecord(record string) (*Pronoun, error) {
 	return parseNormalPronounsRecord(strings.TrimSpace(parts[1]))
 }
 
-func parsePronounsRecords(records []string) (*Pronouns, error) {
+func parsePronounsRecords(records []string, skipParseFails bool) (*Pronouns, error) {
 	pronouns := &Pronouns{}
 
 	for _, rec := range records {
 		if strings.Contains(rec, "*") {
 			pronoun, err := parseWildCardPronounsRecord(rec)
 			if err != nil {
+				if skipParseFails {
+					continue
+				}
+
 				return nil, err
 			}
 
@@ -79,6 +83,10 @@ func parsePronounsRecords(records []string) (*Pronouns, error) {
 
 		pronoun, err := parseNormalPronounsRecord(rec)
 		if err != nil {
+			if skipParseFails {
+				continue
+			}
+
 			return nil, err
 		}
 

@@ -19,12 +19,12 @@ func dedup(pronouns []Pronoun) []Pronoun {
 	return result
 }
 
-func GetPronouns(domain string, fail bool) (*Pronouns, error) {
+func GetPronouns(domain string, skipParseFails bool) (*Pronouns, error) {
 	pronouns := &Pronouns{}
 
 	records, err := net.LookupTXT("primary.pronouns." + domain)
 	if err == nil {
-		p, err := parsePronounsRecords(records)
+		p, err := parsePronounsRecords(records, skipParseFails)
 		if err != nil {
 			return nil, err
 		}
@@ -37,7 +37,7 @@ func GetPronouns(domain string, fail bool) (*Pronouns, error) {
 		return nil, err
 	}
 
-	p, err := parsePronounsRecords(records)
+	p, err := parsePronounsRecords(records, skipParseFails)
 	if err != nil {
 		return nil, err
 	}
