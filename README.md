@@ -13,30 +13,7 @@ go install github.com/vcokltfre/podgo/cmd/podgo@latest
 podgo domain.tld
 ```
 
-For the library:
-
-```go
-import "github.com/vcokltfre/podgo"
-
-func main() {
-	pronouns, err := podgo.GetPronouns("domain.tld", true)
-	if err != nil {
-		panic(err)
-	}
-
-	if pronouns.Any {
-		println("Accepts any pronouns")
-	}
-
-	for _, p := range pronouns.Accept {
-		println(p.Subject, p.Object, p.PossessiveDeterminer, p.PossessivePronoun, p.Reflexive)
-	}
-}
-
-// func GetPronouns(domain string, strict bool) (*Pronouns, error)
-// - domain: the domain to query for pronouns
-// - strict: whether to fail on any invalid record (if false, invalid records are skipped silently)
-```
+For the library, example usage can be found in `cmd/podgo/cmd.go` and `example/main.go`.
 
 ## License
 
