@@ -18,6 +18,7 @@ func main() {
 			"they/them/their/theirs/themself;preferred",
 			"it/its",
 			"invalid;record",
+			"that one/that one/that one's",
 		}, false)
 	}
 	if err != nil {

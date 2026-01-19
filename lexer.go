@@ -73,9 +73,9 @@ func tokenise(record string) ([]token, error) {
 			continue
 		}
 
-		if (c < 'a' || c > 'z') && c != ' ' {
-			return nil, ErrUnexpectedChar
-		}
+		// if (c < 'a' || c > 'z') && c != ' ' {
+		// 	return nil, ErrUnexpectedChar
+		// }
 
 		current += string(c)
 	}
