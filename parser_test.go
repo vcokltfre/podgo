@@ -2,72 +2,213 @@ package podgo
 
 import "testing"
 
-func TestBasicRecordParsing(t *testing.T) {
-	record := "she/her"
-	pronoun, err := parseNormalPronounsRecord(record)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if pronoun.Subject != "she" || pronoun.Object != "her" {
-		t.Fatalf("Parsed pronouns do not match expected values")
-	}
-}
-
-func TestInvalidRecordParsing(t *testing.T) {
-	record := "invalid/record/with/too/many/parts"
-	_, err := parseNormalPronounsRecord(record)
-	if err != ErrInvalidPronounsRecord {
-		t.Fatalf("Expected ErrInvalidPronounsRecord, got %v", err)
-	}
-}
-
-func TestRecordParsingWithPossessive(t *testing.T) {
-	record := "they/them/their/theirs/themself"
-	pronoun, err := parseNormalPronounsRecord(record)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if pronoun.Subject != "they" || pronoun.Object != "them" ||
-		pronoun.PossessiveDeterminer != "their" ||
-		pronoun.PossessivePronoun != "theirs" ||
-		pronoun.Reflexive != "themself" {
-		t.Fatalf("Parsed pronouns do not match expected values")
-	}
-}
-
-func TestWildcardRecordParsing(t *testing.T) {
+func TestParserValidAny(t *testing.T) {
 	record := "*"
-	pronoun, err := parseWildCardPronounsRecord(record)
+	pronouns, err := parsePronounsRecords([]string{record}, false)
 	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
+		t.Fatalf("Unexpected error: %v", err)
 	}
-
-	if pronoun.Subject != "they" || pronoun.Object != "them" ||
-		pronoun.PossessiveDeterminer != "their" ||
-		pronoun.PossessivePronoun != "theirs" ||
-		pronoun.Reflexive != "themself" {
-		t.Fatalf("Parsed pronouns do not match expected wildcard values")
+	if !pronouns.Any {
+		t.Fatalf("Expected Any to be true")
+	}
+	if pronouns.None {
+		t.Fatalf("Expected None to be false")
+	}
+	if len(pronouns.Accept) != 1 {
+		t.Fatalf("Expected 1 accepted pronouns, got %d", len(pronouns.Accept))
 	}
 }
 
-func TestWildcardRecordParsingWithFallback(t *testing.T) {
-	record := "*;she/her"
-	pronoun, err := parseWildCardPronounsRecord(record)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
+func TestParserInvalidAny(t *testing.T) {
+	records := []string{
+		"*;extra",
+		"*/them/their/theirs/themself",
 	}
-
-	if pronoun.Subject != "she" || pronoun.Object != "her" {
-		t.Fatalf("Parsed pronouns do not match expected fallback values")
+	for _, record := range records {
+		_, err := parsePronounsRecords([]string{record}, true)
+		if err == nil {
+			t.Fatalf("Expected error for record: %s", record)
+		}
 	}
 }
 
-func TestInvalidWildcardRecordParsing(t *testing.T) {
-	record := "*;extra"
-	_, err := parseWildCardPronounsRecord(record)
-	if err != ErrInvalidPronounsRecord {
-		t.Fatalf("Expected ErrInvalidPronounsRecord, got %v", err)
+func TestParserValidNone(t *testing.T) {
+	record := "!"
+	pronouns, err := parsePronounsRecords([]string{record}, false)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if pronouns.Any {
+		t.Fatalf("Expected Any to be false")
+	}
+	if !pronouns.None {
+		t.Fatalf("Expected None to be true")
+	}
+	if len(pronouns.Accept) != 0 {
+		t.Fatalf("Expected 0 accepted pronouns, got %d", len(pronouns.Accept))
+	}
+}
+
+func TestParserInvalidNone(t *testing.T) {
+	records := []string{
+		"!;extra",
+		"!/them/their/theirs/themself",
+	}
+	for _, record := range records {
+		_, err := parsePronounsRecords([]string{record}, true)
+		if err == nil {
+			t.Fatalf("Expected error for record: %s", record)
+		}
+	}
+}
+
+func TestParserInvalidPronounSpec(t *testing.T) {
+	record := "they/them;tag/invalid"
+	_, err := parsePronounsRecords([]string{record}, true)
+	if err == nil {
+		t.Fatalf("Expected error for invalid pronoun spec")
+	}
+}
+
+func TestParserValidBasicPronouns(t *testing.T) {
+	record := "they/them"
+	pronouns, err := parsePronounsRecords([]string{record}, true)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if pronouns.Any {
+		t.Fatalf("Expected Any to be false")
+	}
+	if pronouns.None {
+		t.Fatalf("Expected None to be false")
+	}
+	if len(pronouns.Accept) != 1 {
+		t.Fatalf("Expected 1 accepted pronouns, got %d", len(pronouns.Accept))
+	}
+
+	p := pronouns.Accept[0]
+	if p.Subject != "they" || p.Object != "them" {
+		t.Fatalf("Unexpected pronouns values: %+v", p)
+	}
+}
+
+func TestParserValidFullPronouns(t *testing.T) {
+	record := "she/her/her/hers/herself;preferred"
+	pronouns, err := parsePronounsRecords([]string{record}, true)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if pronouns.Any {
+		t.Fatalf("Expected Any to be false")
+	}
+	if pronouns.None {
+		t.Fatalf("Expected None to be false")
+	}
+	if len(pronouns.Accept) != 1 {
+		t.Fatalf("Expected 1 accepted pronouns, got %d", len(pronouns.Accept))
+	}
+
+	p := pronouns.Accept[0]
+	if p.Subject != "she" || p.Object != "her" || p.PossessiveDeterminer != "her" ||
+		p.PossessivePronoun != "hers" || p.Reflexive != "herself" {
+		t.Fatalf("Unexpected pronouns values: %+v", p)
+	}
+
+	if !p.Preferred {
+		t.Fatalf("Expected Preferred to be true")
+	}
+}
+
+func TestParserConvertsItPronouns(t *testing.T) {
+	record := "it/its"
+	pronouns, err := parsePronounsRecords([]string{record}, true)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if pronouns.Any {
+		t.Fatalf("Expected Any to be false")
+	}
+	if pronouns.None {
+		t.Fatalf("Expected None to be false")
+	}
+	if len(pronouns.Accept) != 1 {
+		t.Fatalf("Expected 1 accepted pronouns, got %d", len(pronouns.Accept))
+	}
+
+	p := pronouns.Accept[0]
+	if p.Subject != "it" || p.Object != "it" || p.PossessiveDeterminer != "its" ||
+		p.PossessivePronoun != "its" || p.Reflexive != "itself" {
+		t.Fatalf("Unexpected pronouns values: %+v", p)
+	}
+}
+
+func TestParserMultipleRecords(t *testing.T) {
+	records := []string{
+		"she/her/her/hers/herself;preferred",
+		"they/them",
+		"*",
+	}
+	pronouns, err := parsePronounsRecords(records, true)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if !pronouns.Any {
+		t.Fatalf("Expected Any to be true")
+	}
+	if pronouns.None {
+		t.Fatalf("Expected None to be false")
+	}
+	if len(pronouns.Accept) != 2 {
+		t.Fatalf("Expected 2 accepted pronouns, got %d", len(pronouns.Accept))
+	}
+}
+
+func TestParserIgnoresInvalidRecordsInNonStrictMode(t *testing.T) {
+	records := []string{
+		"she/her/her/hers/herself;preferred",
+		"they/them",
+		"*/extra",
+	}
+	pronouns, err := parsePronounsRecords(records, false)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if pronouns.Any {
+		t.Fatalf("Expected Any to be false")
+	}
+	if pronouns.None {
+		t.Fatalf("Expected None to be false")
+	}
+	if len(pronouns.Accept) != 2 {
+		t.Fatalf("Expected 2 accepted pronouns, got %d", len(pronouns.Accept))
+	}
+}
+
+func TestParserUsesAllDefault(t *testing.T) {
+	records := []string{"*"}
+	pronouns, err := parsePronounsRecords(records, true)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if !pronouns.Any {
+		t.Fatalf("Expected Any to be true")
+	}
+	if pronouns.None {
+		t.Fatalf("Expected None to be false")
+	}
+	if len(pronouns.Accept) != 1 {
+		t.Fatalf("Expected 1 accepted pronouns, got %d", len(pronouns.Accept))
+	}
+
+	p := pronouns.Accept[0]
+	if p.Subject != "they" || p.Object != "them" || p.PossessiveDeterminer != "their" ||
+		p.PossessivePronoun != "theirs" || p.Reflexive != "themself" {
+		t.Fatalf("Unexpected pronouns values: %+v", p)
 	}
 }

@@ -33,9 +33,9 @@ func main() {
 	}
 }
 
-// func GetPronouns(domain string, skipParseFails bool) (*Pronouns, error)
+// func GetPronouns(domain string, strict bool) (*Pronouns, error)
 // - domain: the domain to query for pronouns
-// - skipParseFails: if true, records that fail to parse will be skipped instead of returning an error
+// - strict: whether to fail on any invalid record (if false, invalid records are skipped silently)
 ```
 
 ## License

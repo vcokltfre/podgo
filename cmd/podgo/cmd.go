@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/vcokltfre/podgo"
@@ -12,7 +13,7 @@ func main() {
 		return
 	}
 
-	pronouns, err := podgo.GetPronouns(os.Args[1], true)
+	pronouns, err := podgo.GetPronounsResolved(context.Background(), os.Args[1], false)
 	if err != nil {
 		println("Error:", err.Error())
 		return
@@ -24,5 +25,9 @@ func main() {
 
 	for _, p := range pronouns.Accept {
 		println(p.Subject, p.Object, p.PossessiveDeterminer, p.PossessivePronoun, p.Reflexive)
+	}
+
+	if pref := pronouns.Preferred(); pref != nil {
+		println("Preferred pronouns are:", pref.Subject, pref.Object, pref.PossessiveDeterminer, pref.PossessivePronoun, pref.Reflexive)
 	}
 }
