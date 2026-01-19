@@ -7,6 +7,7 @@ import (
 var (
 	ErrInvalidPronounsRecord = errors.New("invalid pronouns record")
 	ErrUnknownTag            = errors.New("unknown tag in pronouns record")
+	ErrNoValidPronouns       = errors.New("no valid pronouns found")
 )
 
 func isAnyRecord(record []token) (bool, error) {
@@ -184,6 +185,10 @@ func parsePronounsRecords(records []string, strict bool) (*Pronouns, error) {
 				Plural:               true,
 			},
 		}
+	}
+
+	if len(pronouns.Accept) == 0 && !pronouns.Any && !pronouns.None {
+		return nil, ErrNoValidPronouns
 	}
 
 	return pronouns, nil
