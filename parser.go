@@ -191,5 +191,7 @@ func parsePronounsRecords(records []string, strict bool) (*Pronouns, error) {
 		return nil, ErrNoValidPronouns
 	}
 
+	pronouns.condense()
+
 	return pronouns, nil
 }

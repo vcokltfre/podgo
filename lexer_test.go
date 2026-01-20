@@ -148,7 +148,7 @@ func TestLexerValuesAndSeparatorsWithSpacesAndComment(t *testing.T) {
 }
 
 func TestLexerInvalidCharacter(t *testing.T) {
-	record := "they/them/their/theirs/themself$;preferred"
+	record := "they/them/their/theirs/themself!;preferred"
 	_, err := tokenise(record)
 	if err == nil {
 		t.Fatalf("Expected error for invalid character, got nil")

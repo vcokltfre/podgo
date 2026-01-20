@@ -212,6 +212,37 @@ var cases = []testCase{
 		},
 		strict: true,
 	},
+	{
+		inputs: []string{
+			"they/them/their/theirs/themself",
+			"they/them/their/theirs/themself;preferred",
+			"she/her;plural",
+			"she/her/her;preferred",
+		},
+		expected: Pronouns{
+			Any:  false,
+			None: false,
+			Accept: []Pronoun{
+				{
+					Preferred:            true,
+					Plural:               false,
+					Subject:              "they",
+					Object:               "them",
+					PossessiveDeterminer: "their",
+					PossessivePronoun:    "theirs",
+					Reflexive:            "themself",
+				},
+				{
+					Preferred:            true,
+					Plural:               true,
+					Subject:              "she",
+					Object:               "her",
+					PossessiveDeterminer: "her",
+				},
+			},
+		},
+		strict: true,
+	},
 }
 
 func TestManyCases(t *testing.T) {
